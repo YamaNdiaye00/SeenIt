@@ -30,7 +30,14 @@ const MainNavigation = () => {
                     <span/>
                 </button>
                 <h1 className="main-navigation__title">
-                    <Link to="/">YourPlaces </Link>
+                    <Link to="/">
+                        <span style={{color: "gray"}}>S</span>
+                        <span style={{color: "white"}}>e</span>
+                        <span style={{color: "white"}}>e</span>
+                        <span style={{color: "white"}}>n</span>
+                        <span style={{color: "gray"}}>I</span>
+                        <span style={{color: "white"}}>t</span>
+                    </Link>
                 </h1>
                 <nav className="main-navigation__header-nav">
                     <NavLinks/>
