@@ -49,10 +49,12 @@ const signup = async (req, res, next) => {
         return next(error);
     }
 
+    const imgPath = req.file?.path ? req.file.path.replace(/\\/g, '/') : null;
+
     const createdUser = new User({
         name,
         email,
-        image: req.file.path,
+        image: imgPath,
         password: hashedPassword,
         places: []
     });
@@ -73,7 +75,7 @@ const signup = async (req, res, next) => {
         token = jwt.sign(
             { userId: createdUser.id, email: createdUser.email },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '168h' }
         );
 
     } catch (err){
@@ -120,7 +122,7 @@ const login = async (req, res, next) => {
         token = jwt.sign(
             {userId: existingUser.id, email: existingUser.email},
             process.env.JWT_SECRET,
-            {expiresIn: '1h'}
+            {expiresIn: '168h'}
         );
     } catch (err){
         const error = new HttpError('Logging in failed, please try again later.', 500);

@@ -32,13 +32,13 @@ export const useHttpClient = () => {
             setIsLoading(false);
             return responseData;
         } catch (err) {
-            if (!err.message === 'The user aborted a request.') {
-                setError(err.message)
-                setIsLoading(false)
-                throw err
+            if (err.name !== 'AbortError') {
+                setError(err.message);
             }
+            setIsLoading(false);
+            throw err;
         }
-    }, [])
+    }, [BASE_URL])
 
     const clearError = () => {
         setError(null);

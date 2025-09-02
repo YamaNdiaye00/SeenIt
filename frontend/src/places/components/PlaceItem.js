@@ -30,13 +30,12 @@ const PlaceItem = (props) => {
         toggleConfirmModal();
         try {
             await sendRequest(
-                '/api/places/${props.id}',
+                `/api/places/${props.id}`,  // backticks so the id is injected
                 'DELETE',
                 null,
-                {
-                    Authorization: `Bearer ${auth.token}`
-                }
+                {Authorization: `Bearer ${auth.token}`}
             );
+
         } catch (err) {
         }
         props.onDelete(props.id);

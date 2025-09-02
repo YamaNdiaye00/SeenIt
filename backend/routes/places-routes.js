@@ -5,6 +5,7 @@ const HttpError = require('../models/http-error');
 const placesController = require('../controllers/places-controllers');
 const fileUpload = require('../middlewares/file-upload');
 const checkAuth = require('../middlewares/check-auth');
+const {uploadPlaceImage} = require("../middlewares/file-upload");
 
 const router = express.Router();
 
@@ -14,7 +15,8 @@ router.get("/user/:uid", placesController.getPlacesByUserId);
 
 router.use(checkAuth);
 
-router.post('/', fileUpload.single('image'),
+router.post('/',
+    uploadPlaceImage.single('image'),
     [
         check('title').not().isEmpty(),
         check('description').isLength({min: 5}),
