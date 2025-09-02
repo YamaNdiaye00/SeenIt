@@ -2,6 +2,8 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 const helmet = require('helmet');
+const cors = require('cors');
+
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -22,18 +24,33 @@ const app = express();
 // Security: Limit incoming JSON payloads
 app.use(bodyParser.json({ limit: '10kb' }));
 
+// --- CORS ---
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+
+app.use(cors({
+    origin: (origin, cb) => {
+        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+        cb(new Error('Not allowed by CORS'));
+    },
+    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization'],
+    credentials: true
+}));
+
+// Fast preflight
+app.options('*', cors());
+
 // Security: Set HTTP headers
-app.use(helmet());
+app.use(helmet({
+    // allow other origins to display images/files
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 
-app.use('/uploads/images', express.static(path.join('uploads','images')));
+app.use(
+    '/uploads/images',
+    express.static(path.join(__dirname, 'uploads', 'images'))
+);
 
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers',
-        'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
-    next();
-});
 
 app.use('/api/places', placesRoute);
 

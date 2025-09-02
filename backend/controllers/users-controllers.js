@@ -119,7 +119,7 @@ const login = async (req, res, next) => {
     try {
         token = jwt.sign(
             {userId: existingUser.id, email: existingUser.email},
-            'secretKey',
+            process.env.JWT_SECRET,
             {expiresIn: '1h'}
         );
     } catch (err){

@@ -40,7 +40,7 @@ const Auth = props => {
 
             if (isLoginMode) {
                 try {
-                    const responseData = await sendRequest('http://localhost:5000/api/users/login',
+                    const responseData = await sendRequest('/api/users/login',
                         'POST',
                         JSON.stringify({
                             email: formState.inputs.email.value,
@@ -64,7 +64,7 @@ const Auth = props => {
                     formData.append("name", formState.inputs.name.value);
                     formData.append('image', formState.inputs.image.value);
 
-                    const responseData = await sendRequest('http://localhost:5000/api/users/signup',
+                    const responseData = await sendRequest('/api/users/signup',
                         'POST',
                             formData,
                        );
