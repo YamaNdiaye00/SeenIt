@@ -1,53 +1,43 @@
-import {useCallback, useEffect, useRef, useState} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const useHttpClient = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState();
-
     const activeHttpRequests = useRef([]);
-    const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
-    const sendRequest = useCallback(async (endpoint, method = 'GET', body = null, headers = {}) => {
+    const API_BASE = (process.env.REACT_APP_BACKEND_URL || "").trim();
+
+    const buildUrl = (endpoint) => {
+        if (!endpoint) return "";
+        if (/^https?:\/\//i.test(endpoint)) return endpoint;     // absolute given
+        const base = API_BASE.replace(/\/+$/, "");               // strip trailing /
+        const path = `/${endpoint}`.replace(/\/{2,}/g, "/");     // ensure single leading /
+        return base ? `${base}${path}` : path;                   // default = same-origin
+    };
+
+    const sendRequest = useCallback(async (endpoint, method = "GET", body = null, headers = {}) => {
         setIsLoading(true);
-        const httpAbortCtrl = new AbortController();
-        activeHttpRequests.current.push(httpAbortCtrl);
+        const abortCtrl = new AbortController();
+        activeHttpRequests.current.push(abortCtrl);
 
-        const url = `${BASE_URL}${endpoint}`;
-        console.log(url)
+        const url = buildUrl(endpoint);
         try {
-            const response = await fetch(url, {
-                method,
-                body,
-                headers,
-                signal: httpAbortCtrl.signal
-            });
+            const resp = await fetch(url, { method, body, headers, signal: abortCtrl.signal });
+            const isJson = resp.headers.get("content-type")?.includes("application/json");
+            const data = isJson ? await resp.json() : null;
 
-            const responseData = await response.json()
-
-            activeHttpRequests.current = activeHttpRequests.current.filter(reqCtrl => reqCtrl !== httpAbortCtrl);
-
-            if (!response.ok) {
-                throw new Error(responseData.message);
-            }
+            activeHttpRequests.current = activeHttpRequests.current.filter(c => c !== abortCtrl);
+            if (!resp.ok) throw new Error(data?.message || resp.statusText || "Request failed");
             setIsLoading(false);
-            return responseData;
+            return data;
         } catch (err) {
-            if (err.name !== 'AbortError') {
-                setError(err.message);
-            }
+            if (err.name !== "AbortError") setError(err.message || "Request failed");
             setIsLoading(false);
             throw err;
         }
-    }, [BASE_URL])
+    }, [API_BASE]);
 
-    const clearError = () => {
-        setError(null);
-    };
-
-    useEffect(() => {
-        return () => {
-            activeHttpRequests.current.forEach(abortCtrl => abortCtrl.abort());
-        };
-    }, []);
-    return {isLoading, error, sendRequest, clearError};
-}
+    useEffect(() => () => activeHttpRequests.current.forEach(c => c.abort()), []);
+    const clearError = () => setError(null);
+    return { isLoading, error, sendRequest, clearError };
+};
