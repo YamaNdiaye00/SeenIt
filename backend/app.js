@@ -22,7 +22,7 @@ if (!process.env.JWT_SECRET || !process.env.MONGO_URI) {
 const app = express();
 
 // Security: Limit incoming JSON payloads
-app.use(bodyParser.json({ limit: '10kb' }));
+app.use(bodyParser.json({limit: '10kb'}));
 
 // --- CORS ---
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
@@ -32,8 +32,8 @@ app.use(cors({
         if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
         cb(new Error('Not allowed by CORS'));
     },
-    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-    allowedHeaders: ['Content-Type','Authorization'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
 
@@ -43,7 +43,7 @@ app.options('*', cors());
 // Security: Set HTTP headers
 app.use(helmet({
     // allow other origins to display images/files
-    crossOriginResourcePolicy: { policy: 'cross-origin' }
+    crossOriginResourcePolicy: {policy: 'cross-origin'}
 }));
 
 app.use(
@@ -61,12 +61,6 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-
-    if(req.file){
-        fs.unlink(req.file.path, () => {
-            console.log(error)
-        })
-    }
 
     if (res.headerSent) {
         return next(error);

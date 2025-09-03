@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
 
 const User = require("../models/user");
+const {uploadBufferToCloudinary} = require('../lib/cloudinary')
 
 dotenv.config();
 
@@ -49,15 +50,30 @@ const signup = async (req, res, next) => {
         return next(error);
     }
 
-    const imgPath = req.file?.path ? req.file.path.replace(/\\/g, '/') : null;
 
+    // Hash password, then build user first
     const createdUser = new User({
         name,
         email,
-        image: imgPath,
         password: hashedPassword,
         places: []
     });
+
+    // Upload avatar after you have an _id
+    let imageUrl = null;
+    if (req.file?.buffer) {
+        try {
+            const result = await uploadBufferToCloudinary(req.file.buffer, {
+                folder: `${process.env.CLOUDINARY_FOLDER}/users/${createdUser._id}`,
+            });
+            imageUrl = result.secure_url;
+        } catch (e) {
+            return next(new HttpError(`Image upload failed: ${e.message}`, 500));
+        }
+    }
+
+    // Attach image to the user object
+    createdUser.image = imageUrl;
 
     try {
         await createdUser.save();
@@ -73,19 +89,19 @@ const signup = async (req, res, next) => {
     let token;
     try {
         token = jwt.sign(
-            { userId: createdUser.id, email: createdUser.email },
+            {userId: createdUser.id, email: createdUser.email},
             process.env.JWT_SECRET,
-            { expiresIn: '168h' }
+            {expiresIn: '168h'}
         );
 
-    } catch (err){
+    } catch (err) {
         const error = new HttpError('Signing up failed, please try again later.', 500);
         return next(error);
     }
 
     res
         .status(201)
-        .json({ userId: createdUser.id, email: createdUser.email, token: token });
+        .json({userId: createdUser.id, email: createdUser.email, token: token});
 };
 
 const login = async (req, res, next) => {
@@ -124,12 +140,12 @@ const login = async (req, res, next) => {
             process.env.JWT_SECRET,
             {expiresIn: '168h'}
         );
-    } catch (err){
+    } catch (err) {
         const error = new HttpError('Logging in failed, please try again later.', 500);
         return next(error);
     }
 
-    res.json({ message: "Logged in!", userId: existingUser.id, email: existingUser.email, token: token });
+    res.json({message: "Logged in!", userId: existingUser.id, email: existingUser.email, token: token});
 };
 
 exports.getUsers = getUsers;
