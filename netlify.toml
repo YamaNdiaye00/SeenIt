@@ -7,13 +7,6 @@ publish = "build"
 directory = "netlify/functions"
 node_bundler = "esbuild"
 
-[dev]
-framework = "#custom"
-command = "npm start --prefix frontend"
-publish = "frontend/build"
-autoLaunch = false
-envFiles = [".env"]
-
 [[redirects]]
 from = "/api/*"
 to   = "/.netlify/functions/api"
