@@ -1,12 +1,13 @@
-const fs = require('fs');
 const {validationResult} = require('express-validator');
-const {mongo, startSession} = require("mongoose");
+const {startSession} = require("mongoose");
+const {isAbsolute, join} = require("node:path");
 
 const HttpError = require("../models/http-error");
 const getCoordsForAddress = require("../util/location");
 const Place = require("../models/place");
 const User = require("../models/user");
-const {isAbsolute, join} = require("node:path");
+
+const {uploadBufferToCloudinary, extractPublicIdFromUrl, cloudinary} = require('../lib/cloudinary');
 
 const getPlaceById = async (req, res, next) => {
     const placeId = req.params.pid;
@@ -64,7 +65,18 @@ const createPlace = async (req, res, next) => {
         return next(error)
     }
 
-    const imgPath = req.file?.path ? req.file.path.replace(/\\/g, '/') : null;
+    // Upload to Cloudinary if file present
+    let imageUrl = null;
+    if (req.file?.buffer) {
+        try {
+            const result = await uploadBufferToCloudinary(req.file.buffer, {
+                folder: `${process.env.CLOUDINARY_FOLDER}/places/${req.userData.userId}`,
+            });
+            imageUrl = result.secure_url;
+        } catch (e) {
+            return next(new HttpError(`Image upload failed: ${e.message}`, 500));
+        }
+    }
 
     const createdPlace = new Place({
         title,
@@ -72,7 +84,7 @@ const createPlace = async (req, res, next) => {
         location: coordinates,
         address,
         creator: req.userData.userId,
-        image: imgPath
+        image: imageUrl
     });
 
     let user;
@@ -172,6 +184,7 @@ const deletePlaceById = async (req, res, next) => {
     const absImagePath = isAbsolute(place.image)
         ? place.image
         : join(__dirname, '..', place.image);
+    const publicId = place.image ? extractPublicIdFromUrl(place.image) : null;
 
     const sess = await startSession();
     try {
@@ -186,11 +199,13 @@ const deletePlaceById = async (req, res, next) => {
     }
     await sess.endSession();
 
-    // Best-effort file delete
-    try {
-        await fs.promises.unlink(absImagePath);
-    } catch (e) {
-        console.warn('Could not delete image file:', absImagePath, e.message);
+    // Best-effort Cloudinary delete
+    if (publicId) {
+        try {
+            await cloudinary.uploader.destroy(publicId);
+        } catch (e) {
+            console.warn('Cloudinary destroy failed:', publicId, e.message);
+        }
     }
 
     res.status(200).json({message: 'Place deleted.'});
