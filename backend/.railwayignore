@@ -3,7 +3,6 @@ node_modules/
 pnpm-lock.yaml # (optional if you use npm)
 package-lock.json # keep if you want reproducible builds; remove from ignore if needed
 yarn.lock # same note as above
-dist/
 build/
 lib/
 coverage/
