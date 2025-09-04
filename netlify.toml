@@ -1,0 +1,13 @@
+[build]
+base = "frontend"
+command = "npm run build"
+publish = "build"
+
+[functions]
+directory = "netlify/functions"
+node_bundler = "esbuild"
+
+[[redirects]]
+from = "/api/*"
+to   = "/.netlify/functions/api"
+status = 200
