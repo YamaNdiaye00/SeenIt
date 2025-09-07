@@ -18,6 +18,7 @@
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^4.19.2",
@@ -28,6 +29,7 @@
     "mongoose": "^8.3.3",
     "mongoose-unique-validator": "^5.0.0",
     "multer": "^1.4.5-lts.1",
+    "serverless-http": "^4.0.0",
     "uuid": "^9.0.1",
     "uuidv4": "^6.2.13"
   },

@@ -11,9 +11,11 @@ import {AuthContext} from "../../shared/context/auth-context";
 import {useHttpClient} from "../../shared/hooks/http-hook";
 
 import './PlaceItem.css'
+import {getImageSrc} from "../../utils/imageSrc";
 
 const PlaceItem = (props) => {
     const auth = useContext(AuthContext);
+    const imgSrc = getImageSrc(props.image);
     const {isLoading, error, sendRequest, clearError} = useHttpClient();
     const [showMap, setShowMap] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -79,9 +81,10 @@ const PlaceItem = (props) => {
 
                     <div className="place-item__image">
                         <img
-                            src={`${process.env.REACT_APP_BACKEND_URL}/${props.image}`}
+                            src={imgSrc || "/img/place-fallback.jpg"}
                             alt={props.title}
                             style={{width: '100%', objectFit: 'cover', border: '1px solid red'}} // optional debug
+                            loading="lazy"
                         />
                     </div>
 
