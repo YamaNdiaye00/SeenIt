@@ -21,6 +21,9 @@ if (!process.env.JWT_SECRET || !process.env.MONGO_URI) {
 
 const app = express();
 
+// Health check
+app.get('/healthz', (_req, res) => res.send('ok'));
+
 // Security: Limit incoming JSON payloads
 app.use(bodyParser.json({limit: '10kb'}));
 
