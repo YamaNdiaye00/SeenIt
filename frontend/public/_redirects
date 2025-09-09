@@ -1,5 +1,2 @@
-{
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
+/api/*  https://seenit-production.up.railway.app  200
+/*      /index.html  200
