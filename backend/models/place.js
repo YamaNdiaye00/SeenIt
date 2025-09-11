@@ -13,7 +13,7 @@ const placeSchema = new Schema({
             lng: {type: Number, required: true},
         },
         creator: {type: mongoose.Types.ObjectId, required: true, ref: 'User'},
-    }
+    }, {timestamps: true}
 );
 
 module.exports = mongoose.model('Place', placeSchema);

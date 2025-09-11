@@ -20,7 +20,7 @@ const NavLinks = () => {
             }
             {auth.isLoggedIn && (
                 <li>
-                    <NavLink to="/places/new">NEW PLACES</NavLink>
+                    <NavLink to="/places/new">NEW PLACE</NavLink>
                 </li>
             )
             }
