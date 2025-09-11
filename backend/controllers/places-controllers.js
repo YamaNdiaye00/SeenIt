@@ -34,19 +34,24 @@ const getPlacesByUserId = async (req, res, next) => {
 
     let places;
     try {
-        places = await Place.find({creator: userId});
+        places = await Place.find({creator: userId})
+            .sort({createdAt: -1}); // -1 = descending (most recent first)
     } catch (err) {
-        const error = new HttpError('Fetching places failed. Please try again later', 500);
+        const error = new HttpError(
+            'Fetching places failed. Please try again later',
+            500
+        );
         return next(error);
     }
 
-    if (!places) {
+    if (!places || places.length === 0) {
         return next(new HttpError('Could not find places for the user ID', 404));
     }
 
-    res.json({places: places.map(place => place.toObject({getters: true}))});
-
-}
+    res.json({
+        places: places.map((place) => place.toObject({getters: true})),
+    });
+};
 
 const createPlace = async (req, res, next) => {
     const errors = validationResult(req);

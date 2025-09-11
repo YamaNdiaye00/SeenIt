@@ -12,12 +12,19 @@ dotenv.config();
 const getUsers = async (req, res, next) => {
     let users;
     try {
-        users = await User.find({}, '-password')
+        users = await User.find({}, '-password').sort({name: 1});
+        // 1 = ascending (A → Z), -1 = descending (Z → A)
     } catch (err) {
-        const error = new HttpError('Fetching users failed, please try again later.', 500);
+        const error = new HttpError(
+            'Fetching users failed, please try again later.',
+            500
+        );
         return next(error);
     }
-    res.status(200).json({users: users.map(user => user.toObject({getters: true}))});
+
+    res.status(200).json({
+        users: users.map((user) => user.toObject({getters: true})),
+    });
 };
 
 const signup = async (req, res, next) => {
